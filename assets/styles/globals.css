@@ -1,0 +1,178 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #fbf8f0;
+  --foreground: #16251b;
+  --card: #ffffff;
+  --card-foreground: #16251b;
+  --popover: #ffffff;
+  --popover-foreground: #16251b;
+  --primary: #1f4a2e;
+  --primary-foreground: #f6efdd;
+  --secondary: #f6efdd;
+  --secondary-foreground: #1f4a2e;
+  --muted: #f1ebdc;
+  --muted-foreground: #5c6b60;
+  --accent: #d4af5a;
+  --accent-foreground: #1f4a2e;
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --border: #e4dcc6;
+  --input: #e4dcc6;
+  --ring: #1f4a2e;
+  --chart-1: #1f4a2e;
+  --chart-2: #d4af5a;
+  --chart-3: #4f7a5c;
+  --chart-4: #a8873a;
+  --chart-5: #8fb59a;
+  --sidebar: #f6efdd;
+  --sidebar-foreground: #16251b;
+  --sidebar-primary: #1f4a2e;
+  --sidebar-primary-foreground: #f6efdd;
+  --sidebar-accent: #efe6cc;
+  --sidebar-accent-foreground: #1f4a2e;
+  --sidebar-border: #e4dcc6;
+  --sidebar-ring: #1f4a2e;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: #0f1f16;
+  --foreground: #f6efdd;
+  --card: #16291d;
+  --card-foreground: #f6efdd;
+  --popover: #16291d;
+  --popover-foreground: #f6efdd;
+  --primary: #d4af5a;
+  --primary-foreground: #0f1f16;
+  --secondary: #1f4a2e;
+  --secondary-foreground: #f6efdd;
+  --muted: #1b3324;
+  --muted-foreground: #a9b5a9;
+  --accent: #d4af5a;
+  --accent-foreground: #0f1f16;
+  --destructive: #e5675f;
+  --destructive-foreground: #0f1f16;
+  --border: #2a4634;
+  --input: #2a4634;
+  --ring: #d4af5a;
+  --chart-1: #d4af5a;
+  --chart-2: #8fb59a;
+  --chart-3: #4f7a5c;
+  --chart-4: #a8873a;
+  --chart-5: #f6efdd;
+  --sidebar: #16291d;
+  --sidebar-foreground: #f6efdd;
+  --sidebar-primary: #d4af5a;
+  --sidebar-primary-foreground: #0f1f16;
+  --sidebar-accent: #1f4a2e;
+  --sidebar-accent-foreground: #f6efdd;
+  --sidebar-border: #2a4634;
+  --sidebar-ring: #d4af5a;
+}
+
+/* Pemetaan token ke utilitas Tailwind (bg-primary, text-foreground, dst.) */
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-lora);
+  --font-heading: var(--font-lora);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+  }
+}
+
+@utility wrapper {
+  @apply max-w-7xl lg:mx-auto p-5 md:px-10 w-full;
+}
+
+@utility flex-start {
+  @apply flex justify-start items-center;
+}
+
+@utility flex-center {
+  @apply flex justify-center items-center;
+}
+
+@utility flex-between {
+  @apply flex justify-between items-center;
+}
+
+@utility h1-bold {
+  @apply font-bold text-3xl lg:text-4xl;
+}
+
+@utility h2-bold {
+  @apply font-bold text-2xl lg:text-3xl;
+}
+
+@utility h3-bold {
+  @apply font-bold text-xl lg:text-2xl;
+}
+
+html.dark .upload-field .text-white {
+  color: #ffffff !important;
+}
+
+.upload-field .text-white {
+  color: #000 !important;
+}
