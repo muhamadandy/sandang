@@ -28,3 +28,20 @@ export const insertProductSchema = z.object({
   isFeatured: z.boolean().default(false),
   banner: z.string().nullable().optional(),
 });
+
+export const signInSchema = z.object({
+  email: z.string().email("Format email tidak valid"),
+  password: z.string().min(8, "Kata sandi minimal 8 karakter"),
+});
+
+export const signUpSchema = z
+  .object({
+    name: z.string().min(3, "Nama minimal 3 karakter"),
+    email: z.string().email("Format email tidak valid"),
+    password: z.string().min(8, "Kata sandi minimal 8 karakter"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Konfirmasi kata sandi tidak cocok",
+    path: ["confirmPassword"],
+  });

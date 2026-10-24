@@ -1,9 +1,13 @@
-import { APP_NAME } from "@/lib/constants";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
+import { auth } from "@/lib/auth";
+import { APP_NAME } from "@/lib/constants";
 import Menu from "./menu";
 
-const Header = () => {
+const Header = async () => {
+  const session = await auth.api.getSession({ headers: await headers() });
+
   return (
     <header className="w-full border-b">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
@@ -26,7 +30,13 @@ const Header = () => {
           />
         </Link>
 
-        <Menu />
+        <Menu
+          user={
+            session
+              ? { name: session.user.name, email: session.user.email }
+              : null
+          }
+        />
       </div>
     </header>
   );

@@ -1,6 +1,16 @@
 import type { ProductInput } from "@/types";
 
-const sampleData: { products: ProductInput[] } = {
+type SampleUser = {
+  name: string;
+  email: string;
+  password?: string; // kosong = diambil dari SEED_ADMIN_PASSWORD di .env
+  role: "admin" | "user";
+};
+
+const sampleData: {
+  products: ProductInput[];
+  users: SampleUser[];
+} = {
   products: [
     {
       name: "Kemeja Polo Stretch Sporty",
@@ -103,6 +113,25 @@ const sampleData: { products: ProductInput[] } = {
       stock: 8,
       isFeatured: true,
       banner: null,
+    },
+  ],
+  users: [
+    {
+      name: "Admin Sandang",
+      email: "admin@example.com",
+      role: "admin",
+    },
+    {
+      name: "Budi Santoso",
+      email: "budi@example.com",
+      password: "demo12345",
+      role: "user",
+    },
+    {
+      name: "Siti Rahayu",
+      email: "siti@example.com",
+      password: "demo12345",
+      role: "user",
     },
   ],
 };
