@@ -18,9 +18,20 @@ import ModeToggle from "./mode-toggle";
 
 type MenuProps = {
   user: { name: string; email: string } | null;
+  cartCount: number;
 };
 
-const Menu = ({ user }: MenuProps) => {
+const CartBadge = ({ count }: { count: number }) => {
+  if (count === 0) return null;
+
+  return (
+    <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+};
+
+const Menu = ({ user, cartCount }: MenuProps) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -43,6 +54,7 @@ const Menu = ({ user }: MenuProps) => {
         <Link href="/cart" className={buttonVariants({ variant: "ghost" })}>
           <ShoppingCart className="size-4" />
           Keranjang
+          <CartBadge count={cartCount} />
         </Link>
 
         {user ? (
@@ -76,10 +88,24 @@ const Menu = ({ user }: MenuProps) => {
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
             render={
-              <Button variant="ghost" size="icon" aria-label="Buka menu" />
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={
+                  cartCount > 0
+                    ? `Buka menu, ${cartCount} barang di keranjang`
+                    : "Buka menu"
+                }
+                className="relative"
+              />
             }
           >
             <MenuIcon className="size-5" />
+            {cartCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+                {cartCount > 9 ? "9+" : cartCount}
+              </span>
+            )}
           </SheetTrigger>
           <SheetContent side="right">
             <SheetHeader>
@@ -109,6 +135,7 @@ const Menu = ({ user }: MenuProps) => {
               >
                 <ShoppingCart className="size-4" />
                 Keranjang
+                <CartBadge count={cartCount} />
               </Link>
 
               {user ? (

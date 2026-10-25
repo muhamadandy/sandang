@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import AddToCart from "@/components/shared/product/add-to-cart";
 import ProductImages from "@/components/shared/product/product-images";
+import { getMyCart } from "@/lib/actions/cart.actions";
 import { getProductBySlug } from "@/lib/actions/product.actions";
 import { formatCurrency } from "@/lib/utils";
 
@@ -32,6 +33,7 @@ const ProductDetailsPage = async (props: {
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
+  const cart = await getMyCart();
   const outOfStock = product.stock === 0;
 
   return (
@@ -69,9 +71,17 @@ const ProductDetailsPage = async (props: {
                 )}
               </div>
               {!outOfStock && (
-                <Button className="w-full" size="lg">
-                  Tambah ke Keranjang
-                </Button>
+                <AddToCart
+                  cart={cart}
+                  item={{
+                    productId: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    image: product.images[0],
+                    price: product.price,
+                    qty: 1,
+                  }}
+                />
               )}
             </CardContent>
           </Card>
