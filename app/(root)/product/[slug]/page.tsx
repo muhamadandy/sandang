@@ -7,7 +7,7 @@ import AddToCart from "@/components/shared/product/add-to-cart";
 import ProductImages from "@/components/shared/product/product-images";
 import { getMyCart } from "@/lib/actions/cart.actions";
 import { getProductBySlug } from "@/lib/actions/product.actions";
-import { formatCurrency } from "@/lib/utils";
+import { formatRupiah } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +57,7 @@ const ProductDetailsPage = async (props: {
           </div>
 
           <p className="text-3xl font-bold text-primary">
-            {formatCurrency(product.price)}
+            {formatRupiah(product.price)}
           </p>
 
           <Card>

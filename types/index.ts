@@ -6,6 +6,7 @@ import {
   cartItemSchema,
   shippingAddressSchema,
   paymentMethodSchema,
+  updateProfileSchema,
 } from "@/lib/validator";
 
 export type Product = PrismaProduct;
@@ -15,3 +16,4 @@ export type Cart = z.infer<typeof insertCartSchema>;
 export type CartItem = z.infer<typeof cartItemSchema>;
 export type ShippingAddress = z.infer<typeof shippingAddressSchema>;
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
+export type UpdateProfile = z.infer<typeof updateProfileSchema>;

@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/utils";
 import type { Product } from "@/types";
+import { formatRupiah } from "@/lib/format";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const outOfStock = product.stock === 0;
@@ -52,7 +52,7 @@ const ProductCard = ({ product }: { product: Product }) => {
             </span>
           ) : (
             <span className="font-semibold text-primary">
-              {formatCurrency(product.price)}
+              {formatRupiah(product.price)}
             </span>
           )}
         </div>

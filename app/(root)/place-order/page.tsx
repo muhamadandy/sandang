@@ -9,16 +9,10 @@ import { getMyAddress, getMyPaymentMethod } from "@/lib/actions/user.actions";
 import { buttonVariants } from "@/components/ui/button";
 import CheckoutSteps from "@/components/shared/checkout-steps";
 import PlaceOrderForm from "./place-order-form";
+import { formatRupiah } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Ringkasan Pesanan" };
 export const dynamic = "force-dynamic";
-
-const formatRupiah = (value: number) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
 
 const PlaceOrderPage = async () => {
   const session = await auth.api.getSession({ headers: await headers() });

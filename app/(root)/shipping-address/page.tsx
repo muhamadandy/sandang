@@ -5,8 +5,8 @@ import { auth } from "@/lib/auth";
 import { getMyCart } from "@/lib/actions/cart.actions";
 import { getMyAddress } from "@/lib/actions/user.actions";
 import CheckoutSteps from "@/components/shared/checkout-steps";
+import ShippingAddressForm from "@/components/shared/shipping-address-form";
 import type { ShippingAddress } from "@/types";
-import ShippingAddressForm from "./shipping-address-form";
 
 export const metadata: Metadata = { title: "Alamat Pengiriman" };
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ const ShippingAddressPage = async () => {
           </p>
         </div>
 
-        <ShippingAddressForm address={address} />
+        <ShippingAddressForm address={address} redirectTo="/payment-method" />
       </div>
     </section>
   );

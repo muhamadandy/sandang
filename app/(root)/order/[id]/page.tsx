@@ -6,22 +6,10 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getOrderById } from "@/lib/actions/order.actions";
 import PayButton from "./pay-button";
+import { formatDateTime, formatRupiah } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Detail Pesanan" };
 export const dynamic = "force-dynamic";
-
-const formatRupiah = (value: number) =>
-  new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-
-const formatDate = (value: Date) =>
-  new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "long",
-    timeStyle: "short",
-  }).format(value);
 
 const OrderPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -41,7 +29,7 @@ const OrderPage = async ({ params }: { params: Promise<{ id: string }> }) => {
           Nomor pesanan: {order.id}
         </p>
         <p className="text-sm text-muted-foreground">
-          Dibuat pada {formatDate(order.createdAt)}
+          Dibuat pada {formatDateTime(order.createdAt)}
         </p>
       </div>
 
@@ -52,7 +40,7 @@ const OrderPage = async ({ params }: { params: Promise<{ id: string }> }) => {
             <h2 className="mb-2 text-lg font-semibold">Status Pembayaran</h2>
             {order.isPaid ? (
               <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                Lunas{order.paidAt ? ` · ${formatDate(order.paidAt)}` : ""}
+                Lunas{order.paidAt ? ` · ${formatDateTime(order.paidAt)}` : ""}
               </span>
             ) : (
               <span className="inline-block rounded-full bg-destructive/10 px-3 py-1 text-sm font-medium text-destructive">

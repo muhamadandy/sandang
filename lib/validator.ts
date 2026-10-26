@@ -98,3 +98,12 @@ export const paymentMethodSchema = z.object({
     message: "Pilih metode pembayaran",
   }),
 });
+
+// Ubah profil (saat ini hanya nama)
+export const updateProfileSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, "Nama minimal 3 karakter")
+    .max(50, "Nama maksimal 50 karakter"),
+});

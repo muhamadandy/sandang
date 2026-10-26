@@ -3,8 +3,24 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, MenuIcon, ShoppingCart, UserIcon } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  MenuIcon,
+  Package,
+  ShoppingCart,
+  UserIcon,
+} from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +36,11 @@ type MenuProps = {
   user: { name: string; email: string } | null;
   cartCount: number;
 };
+
+const userLinks = [
+  { href: "/user/profile", label: "Profil", icon: UserIcon },
+  { href: "/user/orders", label: "Pesanan Saya", icon: Package },
+];
 
 const CartBadge = ({ count }: { count: number }) => {
   if (count === 0) return null;
@@ -58,23 +79,48 @@ const Menu = ({ user, cartCount }: MenuProps) => {
         </Link>
 
         {user ? (
-          <>
-            <span
-              className="flex max-w-40 items-center gap-2 px-3 text-sm"
-              title={user.email}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  className="max-w-48"
+                  aria-label="Menu akun"
+                />
+              }
             >
               <UserIcon className="size-4 shrink-0" />
               <span className="truncate">{user.name}</span>
-            </span>
-            <Button
-              variant="outline"
-              onClick={handleSignOut}
-              disabled={signingOut}
-            >
-              <LogOut className="size-4" />
-              {signingOut ? "Keluar..." : "Keluar"}
-            </Button>
-          </>
+              <ChevronDown className="size-4 shrink-0" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="space-y-0.5">
+                  <span className="block truncate text-sm font-semibold">
+                    {user.name}
+                  </span>
+                  <span className="block truncate text-xs font-normal text-muted-foreground">
+                    {user.email}
+                  </span>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              {userLinks.map((link) => (
+                <DropdownMenuItem
+                  key={link.href}
+                  render={<Link href={link.href} />}
+                >
+                  <link.icon className="size-4" />
+                  {link.label}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut} disabled={signingOut}>
+                <LogOut className="size-4" />
+                {signingOut ? "Keluar..." : "Keluar"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <Link href="/sign-in" className={buttonVariants()}>
             <UserIcon className="size-4" />
@@ -137,6 +183,25 @@ const Menu = ({ user, cartCount }: MenuProps) => {
                 Keranjang
                 <CartBadge count={cartCount} />
               </Link>
+
+              {user && (
+                <>
+                  {userLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={close}
+                      className={buttonVariants({
+                        variant: "ghost",
+                        className: "justify-start",
+                      })}
+                    >
+                      <link.icon className="size-4" />
+                      {link.label}
+                    </Link>
+                  ))}
+                </>
+              )}
 
               {user ? (
                 <Button

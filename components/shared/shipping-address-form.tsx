@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Loader } from "lucide-react";
+import { ArrowRight, Loader, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -43,7 +43,18 @@ const topFields = [
   },
 ] as const;
 
-const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
+type ShippingAddressFormProps = {
+  address: ShippingAddress;
+  // Tujuan setelah alamat tersimpan. Kosong = tetap di halaman ini.
+  redirectTo?: string;
+  submitLabel?: string;
+};
+
+const ShippingAddressForm = ({
+  address,
+  redirectTo,
+  submitLabel = "Lanjutkan",
+}: ShippingAddressFormProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -61,7 +72,13 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
         return;
       }
 
-      router.push("/payment-method");
+      if (redirectTo) {
+        router.push(redirectTo);
+        return;
+      }
+
+      toast.add({ title: res.message, type: "success" });
+      router.refresh();
     });
   }
 
@@ -174,10 +191,12 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
       >
         {isPending ? (
           <Loader className="size-4 animate-spin" />
-        ) : (
+        ) : redirectTo ? (
           <ArrowRight className="size-4" />
+        ) : (
+          <Save className="size-4" />
         )}
-        Lanjutkan
+        {submitLabel}
       </Button>
     </form>
   );

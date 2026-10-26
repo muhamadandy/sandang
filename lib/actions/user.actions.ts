@@ -1,10 +1,15 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { paymentMethodSchema, shippingAddressSchema } from "@/lib/validator";
-import type { PaymentMethod, ShippingAddress } from "@/types";
+import {
+  paymentMethodSchema,
+  shippingAddressSchema,
+  updateProfileSchema,
+} from "@/lib/validator";
+import type { PaymentMethod, ShippingAddress, UpdateProfile } from "@/types";
 
 export async function getMyAddress(): Promise<ShippingAddress | undefined> {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -84,6 +89,38 @@ export async function updateUserPaymentMethod(
     return { success: true, message: "Metode pembayaran disimpan." };
   } catch (error) {
     console.error("updateUserPaymentMethod gagal:", error);
+    return { success: false, message: "Terjadi kesalahan. Coba lagi." };
+  }
+}
+
+export async function updateUserName(
+  data: UpdateProfile,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
+      return { success: false, message: "Silakan masuk terlebih dahulu." };
+    }
+
+    const parsed = updateProfileSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: parsed.error.issues[0]?.message ?? "Nama tidak valid.",
+      };
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { name: parsed.data.name },
+    });
+
+    // Nama tampil di header, jadi seluruh layout disegarkan
+    revalidatePath("/", "layout");
+
+    return { success: true, message: "Nama berhasil diperbarui." };
+  } catch (error) {
+    console.error("updateUserName gagal:", error);
     return { success: false, message: "Terjadi kesalahan. Coba lagi." };
   }
 }

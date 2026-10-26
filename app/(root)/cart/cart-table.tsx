@@ -7,18 +7,10 @@ import Image from "next/image";
 import { ArrowRight, Loader, Minus, Plus } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { addItemToCart, removeItemFromCart } from "@/lib/actions/cart.actions";
-import { formatCurrency } from "@/lib/utils";
 import type { Cart, CartItem } from "@/types";
+import { formatRupiah } from "@/lib/format";
 
 const CartTable = ({ cart }: { cart?: Cart }) => {
   const router = useRouter();
@@ -67,87 +59,77 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
 
       <div className="grid gap-6 md:grid-cols-4">
         {/* Daftar barang */}
-        <div className="overflow-x-auto md:col-span-3">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Produk</TableHead>
-                <TableHead className="text-center">Jumlah</TableHead>
-                <TableHead className="text-right">Subtotal</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {cart.items.map((item) => {
-                const busy = isPending && busyId === item.productId;
+        <ul className="divide-y rounded-lg border md:col-span-3">
+          {cart.items.map((item) => {
+            const busy = isPending && busyId === item.productId;
 
-                return (
-                  <TableRow key={item.productId}>
-                    <TableCell>
-                      <Link
-                        href={`/product/${item.slug}`}
-                        className="flex items-center gap-3"
+            return (
+              <li key={item.productId} className="flex gap-4 p-4">
+                <Link href={`/product/${item.slug}`} className="shrink-0">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    width={80}
+                    height={80}
+                    className="size-20 rounded-md object-cover"
+                  />
+                </Link>
+
+                <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+                  <div className="space-y-1">
+                    <Link
+                      href={`/product/${item.slug}`}
+                      className="line-clamp-2 text-sm font-medium hover:text-primary"
+                    >
+                      {item.name}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">
+                      {formatRupiah(item.price)}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled={isPending}
+                        onClick={() => handleChange(item, "remove")}
+                        aria-label={`Kurangi ${item.name}`}
                       >
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          width={56}
-                          height={56}
-                          className="size-14 rounded-md object-cover"
-                        />
-                        <div>
-                          <p className="font-medium hover:text-primary">
-                            {item.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatCurrency(item.price)}
-                          </p>
-                        </div>
-                      </Link>
-                    </TableCell>
+                        {busy ? (
+                          <Loader className="size-4 animate-spin" />
+                        ) : (
+                          <Minus className="size-4" />
+                        )}
+                      </Button>
+                      <span className="min-w-6 text-center font-semibold">
+                        {item.qty}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled={isPending}
+                        onClick={() => handleChange(item, "add")}
+                        aria-label={`Tambah ${item.name}`}
+                      >
+                        {busy ? (
+                          <Loader className="size-4 animate-spin" />
+                        ) : (
+                          <Plus className="size-4" />
+                        )}
+                      </Button>
+                    </div>
 
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          disabled={isPending}
-                          onClick={() => handleChange(item, "remove")}
-                          aria-label={`Kurangi ${item.name}`}
-                        >
-                          {busy ? (
-                            <Loader className="size-4 animate-spin" />
-                          ) : (
-                            <Minus className="size-4" />
-                          )}
-                        </Button>
-                        <span className="min-w-6 text-center font-semibold">
-                          {item.qty}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          disabled={isPending}
-                          onClick={() => handleChange(item, "add")}
-                          aria-label={`Tambah ${item.name}`}
-                        >
-                          {busy ? (
-                            <Loader className="size-4 animate-spin" />
-                          ) : (
-                            <Plus className="size-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(item.price * item.qty)}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                    <p className="text-sm font-semibold">
+                      {formatRupiah(item.price * item.qty)}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
 
         {/* Ringkasan */}
         <Card className="h-fit">
@@ -159,24 +141,24 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
                 <dt className="text-muted-foreground">
                   Subtotal ({itemCount} barang)
                 </dt>
-                <dd>{formatCurrency(cart.itemsPrice)}</dd>
+                <dd>{formatRupiah(cart.itemsPrice)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Ongkos kirim</dt>
                 <dd>
                   {cart.shippingPrice === 0
                     ? "Gratis"
-                    : formatCurrency(cart.shippingPrice)}
+                    : formatRupiah(cart.shippingPrice)}
                 </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">PPN 11%</dt>
-                <dd>{formatCurrency(cart.taxPrice)}</dd>
+                <dd>{formatRupiah(cart.taxPrice)}</dd>
               </div>
               <div className="flex justify-between border-t pt-3 text-base font-semibold">
                 <dt>Total</dt>
                 <dd className="text-primary">
-                  {formatCurrency(cart.totalPrice)}
+                  {formatRupiah(cart.totalPrice)}
                 </dd>
               </div>
             </dl>
