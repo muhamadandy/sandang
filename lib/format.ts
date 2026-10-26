@@ -17,8 +17,10 @@ export const formatRupiahCompact = (value: number) => {
   return `Rp${value}`;
 };
 
+// Selalu memakai waktu Jakarta, di mana pun kode berjalan (lokal atau Vercel)
 export const formatDateTime = (value: Date) =>
-  new Intl.DateTimeFormat("id-ID", {
+  `${new Intl.DateTimeFormat("id-ID", {
     dateStyle: "long",
     timeStyle: "short",
-  }).format(value);
+    timeZone: "Asia/Jakarta",
+  }).format(value)} WIB`;
