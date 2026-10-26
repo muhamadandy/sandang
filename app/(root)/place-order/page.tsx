@@ -28,7 +28,7 @@ const PlaceOrderPage = async () => {
   if (!paymentMethod) redirect("/payment-method");
 
   return (
-    <section className="wrapper">
+    <section>
       <CheckoutSteps current={3} />
 
       <h1 className="h2-bold mb-6">Ringkasan Pesanan</h1>

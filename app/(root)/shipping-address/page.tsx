@@ -32,7 +32,7 @@ const ShippingAddressPage = async () => {
   };
 
   return (
-    <section className="wrapper">
+    <section>
       <div className="mx-auto max-w-2xl space-y-6">
         <CheckoutSteps current={1} />
 

@@ -16,7 +16,7 @@ const CartPage = async () => {
   const cart = await getMyCart();
 
   return (
-    <section className="wrapper">
+    <section>
       <CartTable cart={cart} />
     </section>
   );

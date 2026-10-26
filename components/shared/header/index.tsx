@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { getMyCart } from "@/lib/actions/cart.actions";
 import { APP_NAME } from "@/lib/constants";
 import Menu from "./menu";
+import SearchForm from "../search-form";
 
 const Header = async () => {
   const [session, cart] = await Promise.all([
@@ -16,8 +17,12 @@ const Header = async () => {
 
   return (
     <header className="w-full border-b">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link href="/" aria-label={`${APP_NAME} - Beranda`}>
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+        <Link
+          href="/"
+          aria-label={`${APP_NAME} - Beranda`}
+          className="shrink-0"
+        >
           <Image
             src="/images/logo.svg"
             alt={APP_NAME}
@@ -35,6 +40,8 @@ const Header = async () => {
             className="hidden h-9 w-auto dark:block"
           />
         </Link>
+
+        <SearchForm className="hidden max-w-sm flex-1 md:block" />
 
         <Menu
           user={

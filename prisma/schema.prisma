@@ -55,6 +55,7 @@ model Order {
   taxPrice        Int
   totalPrice      Int
   snapToken       String?
+  paymentAttempt  Int         @default(0)
   isPaid          Boolean     @default(false)
   paidAt          DateTime?
   isDelivered     Boolean     @default(false)

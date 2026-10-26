@@ -24,7 +24,7 @@ const OrdersPage = async ({
   const { orders, totalPages } = await getMyOrders(currentPage);
 
   return (
-    <section className="wrapper">
+    <section>
       <h1 className="h2-bold mb-6">Pesanan Saya</h1>
 
       {orders.length === 0 ? (

@@ -2,6 +2,9 @@ import { createHash, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Status Midtrans yang berarti upaya pembayaran itu berakhir tanpa pembayaran
+const ENDED_STATUSES = ["expire", "cancel", "deny", "failure"];
+
 // Endpoint ini dipanggil oleh server Midtrans, bukan oleh browser pengguna.
 // Karena terbuka untuk umum, satu-satunya penjaga adalah tanda tangan (signature_key).
 export async function POST(request: Request) {
@@ -57,9 +60,15 @@ export async function POST(request: Request) {
     );
   }
 
-  // 2. Pesanan harus ada dan nominalnya harus sama
+  // 2. Pecah nomor transaksi "<id-pesanan>-<upaya>". Pesanan lama yang
+  //    nomor transaksinya hanya id pesanan dianggap upaya ke-0.
+  const match = /^(.{36})-(\d+)$/.exec(order_id);
+  const orderId = match ? match[1] : order_id;
+  const attempt = match ? Number(match[2]) : 0;
+
+  // 3. Pesanan harus ada dan nominalnya harus sama
   const order = await prisma.order.findUnique({
-    where: { id: order_id },
+    where: { id: orderId },
     select: { id: true, totalPrice: true },
   });
   if (!order) {
@@ -75,17 +84,27 @@ export async function POST(request: Request) {
     );
   }
 
-  // 3. Hanya status berhasil yang menandai lunas
+  // 4. Upaya berakhir tanpa bayar: kosongkan token supaya tombol "Bayar" berikutnya
+  //    membuat transaksi baru. Hanya berlaku untuk upaya yang sedang aktif.
+  if (ENDED_STATUSES.includes(transaction_status)) {
+    await prisma.order.updateMany({
+      where: { id: order.id, isPaid: false, paymentAttempt: attempt },
+      data: { snapToken: null },
+    });
+    return NextResponse.json({ message: "Upaya pembayaran diakhiri" });
+  }
+
+  // 5. Hanya status berhasil yang menandai lunas
   const isSuccess =
     transaction_status === "settlement" ||
     (transaction_status === "capture" && fraud_status === "accept");
 
   if (!isSuccess) {
-    // pending, expire, cancel, deny, dll. tidak mengubah apa pun
+    // pending dan status lain tidak mengubah apa pun
     return NextResponse.json({ message: "Diabaikan" });
   }
 
-  // 4. Idempoten: Midtrans bisa mengirim notifikasi yang sama berkali-kali.
+  // 6. Idempoten: Midtrans bisa mengirim notifikasi yang sama berkali-kali.
   //    updateMany dengan syarat isPaid=false hanya berhasil satu kali.
   const claimed = await prisma.order.updateMany({
     where: { id: order.id, isPaid: false },
@@ -96,7 +115,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Sudah diproses" });
   }
 
-  // 5. Kurangi stok sesuai barang yang dibeli
+  // 7. Kurangi stok sesuai barang yang dibeli
   const items = await prisma.orderItem.findMany({
     where: { orderId: order.id },
     select: { productId: true, qty: true },

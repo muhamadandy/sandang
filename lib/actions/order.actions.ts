@@ -159,7 +159,8 @@ type SnapTokenResult = {
   token?: string;
 };
 
-// Meminta token pembayaran ke Midtrans untuk satu pesanan
+// Meminta token pembayaran ke Midtrans untuk satu pesanan.
+// Setiap upaya pembayaran memakai nomor transaksi sendiri: "<id-pesanan>-<upaya>".
 export async function createSnapToken(
   orderId: string,
 ): Promise<SnapTokenResult> {
@@ -177,7 +178,8 @@ export async function createSnapToken(
       return { success: false, message: "Pesanan ini sudah dibayar." };
     }
 
-    // Pakai token yang sudah ada supaya tidak membuat transaksi ganda
+    // Upaya yang masih berjalan dipakai ulang (webhook mengosongkan token
+    // saat upaya itu kedaluwarsa, dibatalkan, atau gagal)
     if (order.snapToken) {
       return { success: true, message: "OK", token: order.snapToken };
     }
@@ -186,6 +188,26 @@ export async function createSnapToken(
     if (!serverKey) {
       console.error("MIDTRANS_SERVER_KEY belum diisi di .env");
       return { success: false, message: "Pembayaran belum dikonfigurasi." };
+    }
+
+    // Ambil nomor upaya berikutnya secara atomik. Kalau dua permintaan datang
+    // bersamaan (klik ganda), hanya satu yang berhasil memegang nomor ini.
+    const nextAttempt = order.paymentAttempt + 1;
+    const claimed = await prisma.order.updateMany({
+      where: {
+        id: order.id,
+        isPaid: false,
+        snapToken: null,
+        paymentAttempt: order.paymentAttempt,
+      },
+      data: { paymentAttempt: nextAttempt },
+    });
+
+    if (claimed.count === 0) {
+      return {
+        success: false,
+        message: "Pembayaran sedang disiapkan. Coba lagi sebentar.",
+      };
     }
 
     // Jumlah semua item_details harus sama dengan gross_amount,
@@ -224,7 +246,7 @@ export async function createSnapToken(
       },
       body: JSON.stringify({
         transaction_details: {
-          order_id: order.id,
+          order_id: `${order.id}-${nextAttempt}`,
           gross_amount: order.totalPrice,
         },
         item_details: itemDetails,

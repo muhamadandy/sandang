@@ -37,7 +37,7 @@ const ProductDetailsPage = async (props: {
   const outOfStock = product.stock === 0;
 
   return (
-    <section className="wrapper">
+    <section>
       <div className="grid gap-8 md:grid-cols-2">
         <ProductImages images={product.images} name={product.name} />
 

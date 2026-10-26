@@ -7,7 +7,7 @@ const HomePage = async () => {
   const latestProducts = await getLatestProducts();
 
   return (
-    <div className="wrapper">
+    <div>
       <ProductList data={latestProducts} title="Produk Terbaru" />
     </div>
   );

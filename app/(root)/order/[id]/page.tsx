@@ -22,7 +22,7 @@ const OrderPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const address = order.shippingAddress;
 
   return (
-    <section className="wrapper">
+    <section>
       <div className="mb-6 space-y-2">
         <h1 className="h2-bold">Detail Pesanan</h1>
         <p className="break-all text-sm text-muted-foreground">

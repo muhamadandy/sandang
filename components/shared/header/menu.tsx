@@ -31,12 +31,14 @@ import {
 } from "@/components/ui/sheet";
 import { authClient } from "@/lib/auth-client";
 import ModeToggle from "./mode-toggle";
+import SearchForm from "../search-form";
 
 type MenuProps = {
   user: { name: string; email: string } | null;
   cartCount: number;
 };
 
+// Tautan untuk pengguna yang sudah masuk, dipakai di dropdown dan sheet HP
 const userLinks = [
   { href: "/user/profile", label: "Profil", icon: UserIcon },
   { href: "/user/orders", label: "Pesanan Saya", icon: Package },
@@ -162,6 +164,8 @@ const Menu = ({ user, cartCount }: MenuProps) => {
             </SheetHeader>
 
             <div className="flex flex-col gap-2 px-4">
+              <SearchForm onSearch={close} className="mb-2" />
+
               {user && (
                 <div className="mb-2 rounded-lg bg-muted p-3">
                   <p className="truncate text-sm font-semibold">{user.name}</p>
@@ -184,24 +188,21 @@ const Menu = ({ user, cartCount }: MenuProps) => {
                 <CartBadge count={cartCount} />
               </Link>
 
-              {user && (
-                <>
-                  {userLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={close}
-                      className={buttonVariants({
-                        variant: "ghost",
-                        className: "justify-start",
-                      })}
-                    >
-                      <link.icon className="size-4" />
-                      {link.label}
-                    </Link>
-                  ))}
-                </>
-              )}
+              {user &&
+                userLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={close}
+                    className={buttonVariants({
+                      variant: "ghost",
+                      className: "justify-start",
+                    })}
+                  >
+                    <link.icon className="size-4" />
+                    {link.label}
+                  </Link>
+                ))}
 
               {user ? (
                 <Button
