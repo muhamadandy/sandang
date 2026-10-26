@@ -1,10 +1,14 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guard";
+import { shippingAddressSchema } from "@/lib/validator";
+import type { AdminOrderFilters, OrderStatus } from "@/lib/admin-orders";
 
 const MONTHS_BACK = 6;
 const TIME_ZONE = "Asia/Jakarta";
+const ORDERS_PAGE_SIZE = 10;
 
 function getYearMonth(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -126,4 +130,131 @@ export async function getOverviewData() {
       .sort((a, b) => b.total - a.total),
     latestOrders,
   };
+}
+
+// Syarat untuk setiap tab status
+function statusWhere(status: OrderStatus) {
+  switch (status) {
+    case "unpaid":
+      return { isPaid: false };
+    case "toship":
+      return { isPaid: true, isDelivered: false };
+    case "delivered":
+      return { isDelivered: true };
+    default:
+      return {};
+  }
+}
+
+// Daftar semua pesanan untuk admin, dengan filter status, pencarian, dan paginasi
+export async function getAdminOrders(filters: AdminOrderFilters) {
+  await requireAdmin();
+
+  const page =
+    Number.isInteger(filters.page) && filters.page > 0 ? filters.page : 1;
+  const q = filters.q.trim().slice(0, 100);
+
+  // Pencarian: nama atau email pelanggan, atau awal nomor pesanan (boleh diawali "#")
+  const searchWhere = q
+    ? {
+        OR: [
+          { user: { name: { contains: q, mode: "insensitive" as const } } },
+          { user: { email: { contains: q, mode: "insensitive" as const } } },
+          { id: { startsWith: q.replace(/^#/, "").toLowerCase() } },
+        ],
+      }
+    : {};
+
+  const where = { ...statusWhere(filters.status), ...searchWhere };
+
+  const [rows, total, all, unpaid, toship, delivered] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * ORDERS_PAGE_SIZE,
+      take: ORDERS_PAGE_SIZE,
+      select: {
+        id: true,
+        createdAt: true,
+        totalPrice: true,
+        isPaid: true,
+        isDelivered: true,
+        user: { select: { name: true, email: true } },
+        _count: { select: { orderItems: true } },
+      },
+    }),
+    prisma.order.count({ where }),
+    // Jumlah di setiap tab (tidak terpengaruh kolom pencarian)
+    prisma.order.count(),
+    prisma.order.count({ where: statusWhere("unpaid") }),
+    prisma.order.count({ where: statusWhere("toship") }),
+    prisma.order.count({ where: statusWhere("delivered") }),
+  ]);
+
+  return {
+    orders: rows.map((row) => ({
+      id: row.id,
+      createdAt: row.createdAt,
+      totalPrice: row.totalPrice,
+      isPaid: row.isPaid,
+      isDelivered: row.isDelivered,
+      customerName: row.user.name,
+      customerEmail: row.user.email,
+      itemCount: row._count.orderItems,
+    })),
+    total,
+    totalPages: Math.ceil(total / ORDERS_PAGE_SIZE),
+    counts: { all, unpaid, toship, delivered },
+  };
+}
+
+// Satu pesanan lengkap untuk halaman detail admin (pesanan siapa pun)
+export async function getAdminOrderById(orderId: string) {
+  await requireAdmin();
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      orderItems: true,
+      user: { select: { name: true, email: true } },
+    },
+  });
+  if (!order) return null;
+
+  // Kolom shippingAddress bertipe Json, jadi bentuknya dipastikan lewat zod
+  const address = shippingAddressSchema.safeParse(order.shippingAddress);
+  if (!address.success) return null;
+
+  return { ...order, shippingAddress: address.data };
+}
+
+// Menandai pesanan sudah dikirim. Hanya pesanan lunas yang belum dikirim yang bisa diubah.
+export async function markOrderDelivered(
+  orderId: string,
+): Promise<{ success: boolean; message: string }> {
+  await requireAdmin();
+
+  try {
+    if (typeof orderId !== "string" || orderId.length === 0) {
+      return { success: false, message: "Pesanan tidak valid." };
+    }
+
+    const result = await prisma.order.updateMany({
+      where: { id: orderId, isPaid: true, isDelivered: false },
+      data: { isDelivered: true, deliveredAt: new Date() },
+    });
+
+    if (result.count === 0) {
+      return {
+        success: false,
+        message: "Pesanan belum lunas atau sudah ditandai terkirim.",
+      };
+    }
+
+    revalidatePath("/admin/orders");
+    return { success: true, message: "Pesanan ditandai terkirim." };
+  } catch (error) {
+    console.error("markOrderDelivered gagal:", error);
+    return { success: false, message: "Terjadi kesalahan. Coba lagi." };
+  }
 }
