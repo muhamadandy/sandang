@@ -24,7 +24,12 @@ function getPassword(user: (typeof sampleData.users)[number]) {
 }
 
 async function seedProducts() {
-  const products = insertProductSchema.array().parse(sampleData.products);
+  // Rating dan jumlah ulasan selalu mulai dari 0: angka aslinya dihitung dari
+  // tabel Review (jalankan npm run seed:reviews untuk ulasan demo)
+  const products = insertProductSchema
+    .array()
+    .parse(sampleData.products)
+    .map((product) => ({ ...product, rating: 0, numReviews: 0 }));
 
   await prisma.product.deleteMany();
   const result = await prisma.product.createMany({ data: products });

@@ -107,3 +107,72 @@ export const updateProfileSchema = z.object({
     .min(3, "Nama minimal 3 karakter")
     .max(50, "Nama maksimal 50 karakter"),
 });
+
+// Formulir tambah/ubah produk di panel admin.
+// Rating dan jumlah ulasan sengaja tidak ada (bukan diisi admin).
+export const productFormSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(3, "Nama produk minimal 3 karakter")
+      .max(100, "Nama produk maksimal 100 karakter"),
+    slug: z
+      .string()
+      .trim()
+      .min(3, "Slug minimal 3 karakter")
+      .max(100, "Slug maksimal 100 karakter")
+      .regex(
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+        "Slug hanya boleh huruf kecil, angka, dan tanda hubung",
+      ),
+    category: z
+      .string()
+      .trim()
+      .min(3, "Kategori minimal 3 karakter")
+      .max(50, "Kategori maksimal 50 karakter"),
+    brand: z
+      .string()
+      .trim()
+      .min(2, "Merek minimal 2 karakter")
+      .max(50, "Merek maksimal 50 karakter"),
+    description: z
+      .string()
+      .trim()
+      .min(10, "Deskripsi minimal 10 karakter")
+      .max(2000, "Deskripsi maksimal 2000 karakter"),
+    images: z
+      .array(z.string().min(1))
+      .min(1, "Unggah minimal 1 gambar")
+      .max(5, "Maksimal 5 gambar"),
+    price: z
+      .number()
+      .int("Harga harus bilangan bulat (Rupiah)")
+      .positive("Harga harus lebih dari 0")
+      .max(100_000_000, "Harga terlalu besar"),
+    stock: z
+      .number()
+      .int("Stok harus bilangan bulat")
+      .nonnegative("Stok tidak boleh negatif")
+      .max(100_000, "Stok terlalu besar"),
+    isFeatured: z.boolean(),
+    banner: z.string().min(1).nullable(),
+  })
+  .refine((data) => !data.isFeatured || Boolean(data.banner), {
+    message: "Produk unggulan wajib punya gambar banner",
+    path: ["banner"],
+  });
+
+// Formulir ulasan produk (id produk dikirim terpisah, id pengguna dari sesi)
+export const reviewFormSchema = z.object({
+  rating: z
+    .number()
+    .int("Nilai harus bilangan bulat")
+    .min(1, "Pilih nilai bintang")
+    .max(5, "Nilai maksimal 5 bintang"),
+  comment: z
+    .string()
+    .trim()
+    .min(5, "Ulasan minimal 5 karakter")
+    .max(1000, "Ulasan maksimal 1000 karakter"),
+});

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { getMyCart } from "@/lib/actions/cart.actions";
+import { getMyCartSynced } from "@/lib/actions/cart.actions";
 import CartTable from "./cart-table";
 
 export const metadata: Metadata = { title: "Keranjang" };
@@ -13,11 +13,12 @@ const CartPage = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/sign-in");
 
-  const cart = await getMyCart();
+  // Barang yang produknya sudah dihapus admin dikeluarkan di sini
+  const { cart, removed } = await getMyCartSynced();
 
   return (
     <section>
-      <CartTable cart={cart} />
+      <CartTable cart={cart} removedNames={removed} />
     </section>
   );
 };

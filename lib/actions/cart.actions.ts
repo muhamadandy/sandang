@@ -184,3 +184,54 @@ export async function getMyCart(): Promise<Cart | undefined> {
     totalPrice: cart.totalPrice,
   };
 }
+
+// Seperti getMyCart, tetapi barang yang produknya sudah dihapus admin langsung
+// dikeluarkan dari keranjang, dan harga dihitung ulang. Nama barang yang
+// dikeluarkan dikembalikan di "removed" untuk diberitahukan ke pengguna.
+// Sengaja tidak memanggil revalidatePath, supaya aman dipakai saat halaman dirender.
+export async function getMyCartSynced(): Promise<{
+  cart?: Cart;
+  removed: string[];
+}> {
+  const userId = await getUserId();
+  if (!userId) return { removed: [] };
+
+  const cart = await prisma.cart.findUnique({ where: { userId } });
+  if (!cart) return { removed: [] };
+
+  const items = parseItems(cart.items);
+
+  const existing = await prisma.product.findMany({
+    where: { id: { in: items.map((item) => item.productId) } },
+    select: { id: true },
+  });
+  const existingIds = new Set(existing.map((product) => product.id));
+
+  const kept = items.filter((item) => existingIds.has(item.productId));
+  const removedItems = items.filter((item) => !existingIds.has(item.productId));
+
+  // Tidak ada yang perlu dibersihkan
+  if (removedItems.length === 0) {
+    return {
+      cart: {
+        items,
+        itemsPrice: cart.itemsPrice,
+        shippingPrice: cart.shippingPrice,
+        taxPrice: cart.taxPrice,
+        totalPrice: cart.totalPrice,
+      },
+      removed: [],
+    };
+  }
+
+  const prices = calcPrices(kept);
+  await prisma.cart.update({
+    where: { id: cart.id },
+    data: { items: kept, ...prices },
+  });
+
+  return {
+    cart: { items: kept, ...prices },
+    removed: removedItems.map((item) => item.name),
+  };
+}

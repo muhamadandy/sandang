@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,14 +9,32 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import { addItemToCart, removeItemFromCart } from "@/lib/actions/cart.actions";
-import type { Cart, CartItem } from "@/types";
+import { unavailableMessage } from "@/lib/cart-notice";
 import { formatRupiah } from "@/lib/format";
+import type { Cart, CartItem } from "@/types";
 
-const CartTable = ({ cart }: { cart?: Cart }) => {
+type CartTableProps = {
+  cart?: Cart;
+  // Nama barang yang baru saja dikeluarkan karena produknya sudah dihapus
+  removedNames?: string[];
+};
+
+const CartTable = ({ cart, removedNames = [] }: CartTableProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [isCheckingOut, startCheckout] = useTransition();
+
+  // Beri tahu pengguna sekali saja (di mode pengembangan efek berjalan dua kali)
+  const notified = useRef(false);
+  const removedKey = removedNames.join("|");
+  useEffect(() => {
+    if (removedNames.length > 0 && !notified.current) {
+      notified.current = true;
+      toast.add({ title: unavailableMessage(removedNames), type: "error" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [removedKey]);
 
   const handleChange = (item: CartItem, type: "add" | "remove") => {
     setBusyId(item.productId);

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PRICE_RANGES, type SearchFilters, type SortValue } from "@/lib/search";
 import type { Product } from "@/types";
 
-const SEARCH_PAGE_SIZE = 2;
+const SEARCH_PAGE_SIZE = 8;
 
 export async function getLatestProducts(limit = 4) {
   return prisma.product.findMany({

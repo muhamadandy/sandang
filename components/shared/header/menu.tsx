@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronDown,
+  LayoutDashboard,
   LogOut,
   MenuIcon,
   Package,
@@ -34,7 +35,7 @@ import ModeToggle from "./mode-toggle";
 import SearchForm from "../search-form";
 
 type MenuProps = {
-  user: { name: string; email: string } | null;
+  user: { name: string; email: string; isAdmin: boolean } | null;
   cartCount: number;
 };
 
@@ -43,6 +44,13 @@ const userLinks = [
   { href: "/user/profile", label: "Profil", icon: UserIcon },
   { href: "/user/orders", label: "Pesanan Saya", icon: Package },
 ];
+
+// Tautan khusus admin (/admin otomatis diarahkan ke ringkasan)
+const adminLink = {
+  href: "/admin",
+  label: "Panel Admin",
+  icon: LayoutDashboard,
+};
 
 const CartBadge = ({ count }: { count: number }) => {
   if (count === 0) return null;
@@ -116,6 +124,12 @@ const Menu = ({ user, cartCount }: MenuProps) => {
                   {link.label}
                 </DropdownMenuItem>
               ))}
+              {user.isAdmin && (
+                <DropdownMenuItem render={<Link href={adminLink.href} />}>
+                  <adminLink.icon className="size-4" />
+                  {adminLink.label}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut} disabled={signingOut}>
                 <LogOut className="size-4" />
@@ -203,6 +217,20 @@ const Menu = ({ user, cartCount }: MenuProps) => {
                     {link.label}
                   </Link>
                 ))}
+
+              {user?.isAdmin && (
+                <Link
+                  href={adminLink.href}
+                  onClick={close}
+                  className={buttonVariants({
+                    variant: "ghost",
+                    className: "justify-start",
+                  })}
+                >
+                  <adminLink.icon className="size-4" />
+                  {adminLink.label}
+                </Link>
+              )}
 
               {user ? (
                 <Button

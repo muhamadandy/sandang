@@ -4,8 +4,9 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getMyCart } from "@/lib/actions/cart.actions";
+import { getMyCartSynced } from "@/lib/actions/cart.actions";
 import { getMyAddress, getMyPaymentMethod } from "@/lib/actions/user.actions";
+import { unavailableMessage } from "@/lib/cart-notice";
 import { paymentMethodSchema, shippingAddressSchema } from "@/lib/validator";
 
 // Alamat API Snap versi Sandbox (uji coba)
@@ -31,7 +32,17 @@ export async function createOrder(): Promise<CreateOrderResult> {
     }
     const userId = session.user.id;
 
-    const cart = await getMyCart();
+    // Keluarkan dulu barang yang produknya sudah dihapus admin
+    const { cart, removed } = await getMyCartSynced();
+    if (removed.length > 0) {
+      revalidatePath("/", "layout");
+      return {
+        success: false,
+        message: unavailableMessage(removed),
+        redirectTo: "/cart",
+      };
+    }
+
     if (!cart || cart.items.length === 0) {
       return {
         success: false,

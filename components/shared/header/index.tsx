@@ -46,7 +46,12 @@ const Header = async () => {
         <Menu
           user={
             session
-              ? { name: session.user.name, email: session.user.email }
+              ? {
+                  name: session.user.name,
+                  email: session.user.email,
+                  // Peran dicek di server, hanya hasilnya yang dikirim ke klien
+                  isAdmin: session.user.role === "admin",
+                }
               : null
           }
           cartCount={cartCount}

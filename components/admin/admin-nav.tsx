@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/admin/overview", label: "Ringkasan", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Pesanan", icon: ShoppingBag },
+  { href: "/admin/products", label: "Produk", icon: Package },
 ];
 
 const AdminNav = () => {
